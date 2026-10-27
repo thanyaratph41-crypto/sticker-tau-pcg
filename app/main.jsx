@@ -1,35 +1,3 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import {openDB} from 'idb';
-import QRCode from 'qrcode';
-import JsBarcode from 'jsbarcode';
-import * as XLSX from 'xlsx';
-import {LayoutDashboard, PackagePlus, History, Printer, Database, Camera, Search, Download, Upload, Plus, Trash2, Save, ClipboardList, ShieldAlert, Image as ImageIcon, X, Menu, ChevronRight, FileText, CheckCircle2, Boxes} from 'lucide-react';
-import './style.css';
-
-const DB_NAME='sticker-tau-pcg-local-v1';
-const today=()=>new Date().toISOString().slice(0,10);
-const newId=()=>crypto.randomUUID();
-const blankItem=()=>({id:newId(),heading:'',lpn:'',vehicle:'',sabCode:'',sku:'',barcode:'',name:'',qty:'',unit:'ถุง',weight:'',lot:'',mfg:'',exp:'',palletCode:'',photos:[],notes:''});
-const blankReceipt=()=>({id:newId(),receiptNo:'',date:today(),type:'PO',supplier:'',referenceNo:'',receiver:'',status:'draft',notes:'',items:[blankItem()],createdAt:new Date().toISOString()});
-async function db(){return openDB(DB_NAME,1,{upgrade(d){d.createObjectStore('receipts',{keyPath:'id'});d.createObjectStore('settings',{keyPath:'key'});}})}
-async function allReceipts(){const d=await db();return (await d.getAll('receipts')).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));}
-async function saveReceipt(r){const d=await db();await d.put('receipts',r);return r;}
-async function deleteReceipt(id){const d=await db();await d.delete('receipts',id);}
-function fmtDate(s){if(!s)return '—';const [y,m,d]=s.split('-');return `${d}/${m}/${y}`;}
-function safeFileName(s){return (s||'label').replace(/[^a-z0-9-_]/gi,'_');}
-function App(){
- const [page,setPage]=useState('dashboard'),[excelView,setExcelView]=useState('hub'),[receipts,setReceipts]=useState([]),[receipt,setReceipt]=useState(blankReceipt()),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[selected,setSelected]=useState(null),[navOpen,setNavOpen]=useState(false),[showPhotos,setShowPhotos]=useState(null),[stagedExcel,setStagedExcel]=useState(null),[excelReceiver,setExcelReceiver]=useState(''),[selectedPrint,setSelectedPrint]=useState({}),[printCopies,setPrintCopies]=useState({});
- const importRef=useRef(null);
- const excelRef=useRef(null);
- const refresh=async()=>setReceipts(await allReceipts());
- useEffect(()=>{refresh().catch(()=>setNotice('เปิดฐานข้อมูลในเบราว์เซอร์ไม่สำเร็จ'));},[]);
- const notify=(s)=>{setNotice(s);setTimeout(()=>setNotice(''),4000)};
- const totalItems=receipts.reduce((n,r)=>n+(r.items||[]).length,0);
- const totalQty=receipts.reduce((n,r)=>n+(r.items||[]).reduce((a,i)=>a+(Number(i.qty)||0),0),0);
- const filtered=useMemo(()=>receipts.filter(r=>{
-  const hay=[r.receiptNo,r.supplier,r.referenceNo,r.receiver,r.type,...(r.items||[]).flatMap(i=>[i.sku,i.name,i.lot,i.barcode,i.palletCode])].join(' ').toLowerCase();
-  return hay.includes(query.toLowerCase())&&(!from||r.date>=from)&&(!to||r.date<=to);
  }),[receipts,query,from,to]);
  const startNew=()=>{const r=blankReceipt();r.receiptNo=`IN-${today().replaceAll('-','')}-${String(Date.now()).slice(-4)}`;setReceipt(r);setPage('receive');};
  const editReceipt=(r)=>{setReceipt(structuredClone(r));setPage('receive');};
@@ -99,7 +67,7 @@ function App(){
       <div class="date-row"><span><b>วันที่รับ :</b> ${escape(fmtDate(r.date)||'—')}</span><span><b>ทะเบียนรถ :</b> ${escape(item.vehicle||'—')}</span></div>
       <div class="date-row production"><span><b>วันที่ผลิต :</b> ${escape(fmtDate(item.mfg)||'—')}</span><span><b>วันหมดอายุ :</b> ${escape(fmtDate(item.exp)||'—')}</span></div>
       <div class="details"><div class="detail-row"><b>SAB Code :</b><strong>${escape(item.sabCode||item.sku||'—')}</strong></div><div class="detail-row product-row"><b>ชื่อสินค้า :</b><strong>${escape(item.name||'—')}</strong></div><div class="detail-row"><b>Lot :</b><strong>${escape(item.lot||'—')}</strong></div></div>
-      <div class="foot">F-RM-26-03 REV.01</div>
+      <div class="foot"><span>F-RM-26-03 REV.01</span><span>บังคับใช้วันที่ 10/08/2566</span></div>
     </div>`;
   };
   try{
@@ -113,7 +81,7 @@ function App(){
       .barcode{height:.48in;min-height:.48in;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:.015in 0 .005in}.barcode svg{width:auto;max-width:3.15in;height:.42in;overflow:visible;flex-shrink:0}.barcode svg text{font-family:Arial,sans-serif!important;font-size:10px!important}.barcode-text{font-size:8pt;font-weight:700}
       .stats{height:.47in;min-height:.47in;display:grid;grid-template-columns:1fr 1.15fr;border-bottom:1pt solid #111;margin-top:.015in}.stat{display:flex;align-items:center;justify-content:center;gap:.045in;position:relative;padding:.02in .03in;white-space:nowrap;overflow:hidden}.stat:first-child{border-right:1pt solid #111}.stat .caption{font-size:9pt;font-weight:700}.stat strong{font-size:19pt;line-height:1;font-weight:800}.stat small{font-size:7pt;align-self:flex-end;padding-bottom:.015in}
       .date-row{height:.34in;min-height:.34in;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:.05in;border-bottom:.7pt solid #777;padding:0 .015in;font-size:9.1pt;white-space:nowrap}.date-row span{overflow:hidden;text-overflow:clip}.date-row b{font-weight:800}.production{height:.34in;min-height:.34in;border-bottom:0;font-size:9pt}
-      .details{border:1.3pt solid #111;border-radius:8pt;padding:.045in .075in .025in;margin-top:.015in;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-around;overflow:hidden}.detail-row{display:grid;grid-template-columns:.92in 1fr;gap:.035in;align-items:center;min-height:.22in;font-size:10.5pt;line-height:1.05;overflow:hidden}.detail-row b{font-weight:800;white-space:nowrap}.detail-row strong{font-size:12pt;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product-row strong{font-size:13pt}.foot{height:.17in;min-height:.17in;display:flex;align-items:flex-end;justify-content:flex-end;font-size:7.5pt;padding-right:.02in}
+      .details{border:1.3pt solid #111;border-radius:8pt;padding:.045in .075in .025in;margin-top:.015in;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-around;overflow:hidden}.detail-row{display:grid;grid-template-columns:.92in 1fr;gap:.035in;align-items:center;min-height:.22in;font-size:10.5pt;line-height:1.05;overflow:hidden}.detail-row b{font-weight:800;white-space:nowrap}.detail-row strong{font-size:12pt;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product-row strong{font-size:13pt}.foot{height:.30in;min-height:.30in;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:.01in;font-size:7.5pt;line-height:1.05;padding-right:.02in}
       @media screen{body{background:#e9edf2;padding:12px}.label{margin:0 auto 12px;box-shadow:0 2px 10px #0002}}
     </style></head><body>${labels}<script>window.onload=()=>{setTimeout(()=>window.print(),450)};<\/script></body></html>`;
     w.document.open();w.document.write(html);w.document.close();
