@@ -48,6 +48,34 @@ function App(){
  const validate=()=>{if(!receipt.date||!receipt.receiver.trim())return 'กรุณาระบุวันที่รับและชื่อผู้รับ';if(!receipt.items.length)return 'ต้องมีสินค้าอย่างน้อย 1 รายการ';for(let n=0;n<receipt.items.length;n++){const i=receipt.items[n];if(!i.sku.trim()||!i.name.trim()||!(Number(i.qty)>0))return `รายการที่ ${n+1}: กรุณากรอก SKU ชื่อสินค้า และจำนวนรับให้ถูกต้อง`;if(i.exp&&i.mfg&&i.exp<i.mfg)return `รายการที่ ${n+1}: วันหมดอายุต้องไม่ก่อนวันผลิต`;if(!i.lot.trim())return `รายการที่ ${n+1}: กรุณาระบุ LOT`;}return '';};
  const persist=async(status='draft')=>{const err=validate();if(err){notify(err);return;}setBusy(true);try{const r={...receipt,status,updatedAt:new Date().toISOString(),createdAt:receipt.createdAt||new Date().toISOString()};await saveReceipt(r);await refresh();setReceipt(r);notify(status==='confirmed'?'บันทึกและยืนยันรายการแล้ว':'บันทึกร่างแล้ว');}catch(e){notify('บันทึกไม่สำเร็จ พื้นที่จัดเก็บอาจเต็ม');}finally{setBusy(false);}};
  const confirmReceipt=async()=>{const err=validate();if(err){notify(err);return;}if(!confirm('ยืนยันเอกสารรับเข้านี้หรือไม่? หลังยืนยันควรแก้ไขเฉพาะตามขั้นตอนของหน่วยงาน'))return;await persist('confirmed');};
+ const exportExcel=async()=>{
+  try{
+   const data=(await allReceipts()).flatMap(r=>(r.items||[]).map(i=>({
+    'เลขที่รับเข้า':r.receiptNo||'',
+    'วันที่รับ':r.date||'',
+    'ผู้รับ':r.receiver||'',
+    'ทะเบียนรถ':i.vehicle||'',
+    'รหัส LPN':String(i.lpn||''),
+    'SAB Code':String(i.sabCode||i.sku||''),
+    'ชื่อสินค้า':i.name||'',
+    'Lot':String(i.lot||''),
+    'จำนวน':i.qty??'',
+    'หน่วย':i.unit||'',
+    'น้ำหนัก':i.weight??'',
+    'บาร์โค้ด':String(i.sabCode||i.sku||i.barcode||''),
+    'วันที่ผลิต':i.mfg||'',
+    'วันหมดอายุ':i.exp||'',
+    'สถานะ':r.status||'',
+    'หมายเหตุ':i.notes||r.notes||''
+   })));
+   const ws=XLSX.utils.json_to_sheet(data);
+   ws['!cols']=[{wch:22},{wch:14},{wch:20},{wch:16},{wch:22},{wch:18},{wch:32},{wch:18},{wch:12},{wch:10},{wch:12},{wch:22},{wch:14},{wch:14},{wch:14},{wch:28}];
+   const wb=XLSX.utils.book_new();
+   XLSX.utils.book_append_sheet(wb,ws,'รายการรับเข้า');
+   XLSX.writeFile(wb,`sticker-tau-inbound-${today()}.xlsx`);
+   notify(`ส่งออกข้อมูล ${data.length} รายการแล้ว`);
+  }catch(e){notify('ส่งออก Excel ไม่สำเร็จ กรุณาลองอีกครั้ง');}
+ };
  const exportBackup=async()=>{const data={app:'Sticker Tau PCG local prototype',version:1,exportedAt:new Date().toISOString(),receipts:await allReceipts()};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`sticker-tau-backup-${today()}.json`;a.click();URL.revokeObjectURL(a.href);};
  const importBackup=async(file)=>{try{const x=JSON.parse(await file.text());if(!Array.isArray(x.receipts))throw Error('รูปแบบไฟล์ไม่ถูกต้อง');if(!confirm(`นำเข้า ${x.receipts.length} เอกสารหรือไม่? หาก ID ซ้ำ ข้อมูลเดิมจะถูกแทนที่`))return;const d=await db();for(const r of x.receipts){if(r.id&&Array.isArray(r.items))await d.put('receipts',r);}await refresh();notify('นำเข้าข้อมูลสำรองแล้ว');}catch(e){notify('นำเข้าไม่ได้: ไฟล์ไม่ถูกต้อง');}};
  const importExcel=async(file)=>{try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});if(!rows.length)throw Error('ไม่พบแถวข้อมูล');const get=(row,...names)=>{for(const n of names){const key=Object.keys(row).find(k=>k.trim().toLowerCase()===n.toLowerCase());if(key!==undefined&&String(row[key]??'').trim()!=='')return String(row[key]).trim();}return '';};const dateFix=(v)=>{if(!v)return '';const s=String(v).trim();let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;const d=new Date(s);return !Number.isNaN(d.getTime())?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';};const items=rows.filter(row=>get(row,'ชื่อสินค้า','SAB Code','รหัส LPN')).map((row,index)=>({ ...blankItem(),heading:get(row,'หัวข้อ'),lpn:get(row,'รหัส LPN'),qty:get(row,'จำนวน'),weight:get(row,'น้ำหนัก').replace(/\s*kg\s*/i,''),vehicle:get(row,'ทะเบียนรถ'),sabCode:get(row,'SAB Code'),sku:get(row,'SAB Code'),name:get(row,'ชื่อสินค้า'),lot:get(row,'Lot','LOT'),barcode:get(row,'บาร์โค้ด','Barcode'),mfg:dateFix(get(row,'วันที่ผลิต','วันผลิต','MFG','Manufacturing Date')),exp:dateFix(get(row,'วันหมดอายุ','วันที่หมดอายุ','EXP','Expiry Date','Expiration Date')),unit:'ชิ้น',notes:'นำเข้าจาก Excel',excelRow:index+2}));if(!items.length)throw Error('ไม่พบแถวสินค้าที่มีชื่อสินค้า, SAB Code หรือรหัส LPN');const first=rows[0];const receiptDate=dateFix(get(first,'วันที่รับ'))||today();const problems=items.map((i,index)=>{const errs=[];if(!i.lpn)errs.push('ไม่มี LPN');if(!i.sabCode)errs.push('ไม่มี SAB Code');if(!i.name)errs.push('ไม่มีชื่อสินค้า');if(!i.lot)errs.push('ไม่มี Lot');if(!(Number(i.qty)>0))errs.push('จำนวนต้องมากกว่า 0');if(!i.barcode)errs.push('ไม่มีบาร์โค้ด');if(i.mfg&&i.exp&&i.exp<i.mfg)errs.push('วันหมดอายุก่อนวันผลิต');return {index,errors:errs};});setStagedExcel({fileName:file.name,receiptDate,items,problems,receiptNo:`EX-${today().replaceAll('-','')}-${String(Date.now()).slice(-4)}`});setExcelReceiver('');setPage('excel');notify(`อ่าน Excel สำเร็จ ${items.length} รายการ กรุณาตรวจสอบก่อนบันทึก`);}catch(e){notify(`นำเข้า Excel ไม่สำเร็จ: ${e.message||'กรุณาตรวจชื่อคอลัมน์'}`);}finally{if(excelRef.current)excelRef.current.value='';}};
