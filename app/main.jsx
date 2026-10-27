@@ -12,7 +12,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 const newId=()=>crypto.randomUUID();
 const blankItem=()=>({id:newId(),heading:'',lpn:'',vehicle:'',sabCode:'',sku:'',barcode:'',name:'',qty:'',unit:'ถุง',weight:'',lot:'',mfg:'',exp:'',palletCode:'',photos:[],notes:''});
 const blankReceipt=()=>({id:newId(),receiptNo:'',date:today(),type:'PO',supplier:'',referenceNo:'',receiver:'',status:'draft',notes:'',items:[blankItem()],createdAt:new Date().toISOString()});
-async function db(){return openDB(DB_NAME,2,{upgrade(d,oldVersion){if(oldVersion<1){d.createObjectStore('receipts',{keyPath:'id'});d.createObjectStore('settings',{keyPath:'key'});}if(oldVersion<2){d.createObjectStore('fiveS',{keyPath:'id'});}})}}
+async function db(){return openDB(DB_NAME,3,{upgrade(d,oldVersion){if(oldVersion<1){d.createObjectStore('receipts',{keyPath:'id'});d.createObjectStore('settings',{keyPath:'key'});}if(!d.objectStoreNames.contains('fiveS')){d.createObjectStore('fiveS',{keyPath:'id'});}}});}
 async function allFiveS(){const d=await db();return (await d.getAll('fiveS')).sort((a,b)=>(b.updatedAt||b.date||'').localeCompare(a.updatedAt||a.date||''));}
 async function saveFiveS(record){const d=await db();await d.put('fiveS',record);return record;}
 async function deleteFiveS(id){const d=await db();await d.delete('fiveS',id);}
