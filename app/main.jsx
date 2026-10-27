@@ -1,3 +1,35 @@
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {createRoot} from 'react-dom/client';
+import {openDB} from 'idb';
+import QRCode from 'qrcode';
+import JsBarcode from 'jsbarcode';
+import * as XLSX from 'xlsx';
+import {LayoutDashboard, PackagePlus, History, Printer, Database, Camera, Search, Download, Upload, Plus, Trash2, Save, ClipboardList, ShieldAlert, Image as ImageIcon, X, Menu, ChevronRight, FileText, CheckCircle2, Boxes} from 'lucide-react';
+import './style.css';
+
+const DB_NAME='sticker-tau-pcg-local-v1';
+const today=()=>new Date().toISOString().slice(0,10);
+const newId=()=>crypto.randomUUID();
+const blankItem=()=>({id:newId(),heading:'',lpn:'',vehicle:'',sabCode:'',sku:'',barcode:'',name:'',qty:'',unit:'ถุง',weight:'',lot:'',mfg:'',exp:'',palletCode:'',photos:[],notes:''});
+const blankReceipt=()=>({id:newId(),receiptNo:'',date:today(),type:'PO',supplier:'',referenceNo:'',receiver:'',status:'draft',notes:'',items:[blankItem()],createdAt:new Date().toISOString()});
+async function db(){return openDB(DB_NAME,1,{upgrade(d){d.createObjectStore('receipts',{keyPath:'id'});d.createObjectStore('settings',{keyPath:'key'});}})}
+async function allReceipts(){const d=await db();return (await d.getAll('receipts')).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));}
+async function saveReceipt(r){const d=await db();await d.put('receipts',r);return r;}
+async function deleteReceipt(id){const d=await db();await d.delete('receipts',id);}
+function fmtDate(s){if(!s)return '—';const [y,m,d]=s.split('-');return `${d}/${m}/${y}`;}
+function safeFileName(s){return (s||'label').replace(/[^a-z0-9-_]/gi,'_');}
+function App(){
+ const [page,setPage]=useState('dashboard'),[excelView,setExcelView]=useState('hub'),[receipts,setReceipts]=useState([]),[receipt,setReceipt]=useState(blankReceipt()),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[selected,setSelected]=useState(null),[navOpen,setNavOpen]=useState(false),[showPhotos,setShowPhotos]=useState(null),[stagedExcel,setStagedExcel]=useState(null),[excelReceiver,setExcelReceiver]=useState(''),[selectedPrint,setSelectedPrint]=useState({}),[printCopies,setPrintCopies]=useState({});
+ const importRef=useRef(null);
+ const excelRef=useRef(null);
+ const refresh=async()=>setReceipts(await allReceipts());
+ useEffect(()=>{refresh().catch(()=>setNotice('เปิดฐานข้อมูลในเบราว์เซอร์ไม่สำเร็จ'));},[]);
+ const notify=(s)=>{setNotice(s);setTimeout(()=>setNotice(''),4000)};
+ const totalItems=receipts.reduce((n,r)=>n+(r.items||[]).length,0);
+ const totalQty=receipts.reduce((n,r)=>n+(r.items||[]).reduce((a,i)=>a+(Number(i.qty)||0),0),0);
+ const filtered=useMemo(()=>receipts.filter(r=>{
+  const hay=[r.receiptNo,r.supplier,r.referenceNo,r.receiver,r.type,...(r.items||[]).flatMap(i=>[i.sku,i.name,i.lot,i.barcode,i.palletCode])].join(' ').toLowerCase();
+  return hay.includes(query.toLowerCase())&&(!from||r.date>=from)&&(!to||r.date<=to);
  }),[receipts,query,from,to]);
  const startNew=()=>{const r=blankReceipt();r.receiptNo=`IN-${today().replaceAll('-','')}-${String(Date.now()).slice(-4)}`;setReceipt(r);setPage('receive');};
  const editReceipt=(r)=>{setReceipt(structuredClone(r));setPage('receive');};
