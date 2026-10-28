@@ -6,7 +6,7 @@ import JsBarcode from 'jsbarcode';
 import * as XLSX from 'xlsx';
 import {LayoutDashboard, PackagePlus, History, Printer, Database, Camera, Search, Download, Upload, Plus, Trash2, Save, ClipboardList, ShieldAlert, Image as ImageIcon, X, Menu, ChevronRight, FileText, CheckCircle2, Boxes, ClipboardCheck} from 'lucide-react';
 import './style.css';
-import pcgWorkerImage from './assets/pcg-worker.png';
+import pcgWorkerImage from './pcg-worker.png';
 
 const DB_NAME='sticker-tau-pcg-local-v1';
 const today=()=>new Date().toISOString().slice(0,10);
