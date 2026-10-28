@@ -6,6 +6,7 @@ import JsBarcode from 'jsbarcode';
 import * as XLSX from 'xlsx';
 import {LayoutDashboard, PackagePlus, History, Printer, Database, Camera, Search, Download, Upload, Plus, Trash2, Save, ClipboardList, ShieldAlert, Image as ImageIcon, X, Menu, ChevronRight, FileText, CheckCircle2, Boxes, ClipboardCheck} from 'lucide-react';
 import './style.css';
+import pcgWorkerImage from './assets/pcg-worker.png';
 
 const DB_NAME='sticker-tau-pcg-local-v1';
 const today=()=>new Date().toISOString().slice(0,10);
@@ -145,7 +146,7 @@ function App(){
     <header className="pcg-login-top"><div className="pcg-login-brand"><div className="pcg-login-mark">PCG</div><div><b>Sticker Tau PCG</b><span>RAW MATERIALS · RECEIVING MANAGEMENT</span><small>ระบบจัดการรับเข้าวัตถุดิบ</small></div></div><button className="pcg-login-top-btn" onClick={()=>setLoginOpen(true)}><span>↪</span> เข้าสู่ระบบ</button></header>
     <main className="pcg-login-hero"><div className="pcg-login-pill"><i/> PCG OPERATIONS SYSTEM</div><h1>จัดการวัตถุดิบ<br/><em>ง่ายในที่เดียว</em></h1><p>ระบบรับเข้าวัตถุดิบ ตรวจสอบข้อมูล และจัดการฉลากสินค้า<br className="pcg-desktop-break"/> ครบจบในพื้นที่ทำงานเดียว</p><div className="pcg-login-runway" aria-label="พนักงาน PCG วิ่งส่งวัตถุดิบ">
       <div className="pcg-login-runner">
-        <img className="pcg-runner-art pcg-runner-real" src="/pcg-worker.png" alt="พนักงานคลังสินค้า PCG วิ่งถือกล่อง" />
+        <img className="pcg-runner-art pcg-runner-real" src={pcgWorkerImage} alt="พนักงานคลังสินค้า PCG วิ่งถือกล่อง" />
         <span className="pcg-runner-trail" aria-hidden="true">•••</span>
       </div>
       <div className="pcg-runner-road" aria-hidden="true"/>
