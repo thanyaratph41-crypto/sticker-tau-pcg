@@ -35,7 +35,7 @@ body{background:linear-gradient(135deg,#f7f9fd 0%,#edf3fa 100%);color:var(--pcg-
 .pcg-login-demo{width:100%;margin-top:10px;padding:11px;border:1px solid #d5dfeb;border-radius:11px;background:transparent;color:#51657c;font:inherit;font-size:12px;cursor:pointer}.pcg-login-demo:hover{background:#edf3fa}
 
 /* Animated PCG warehouse runner: the complete character travels together */
-.pcg-login-runway{height:142px;width:min(590px,88vw);position:relative;margin:14px 0 22px;overflow:hidden;isolation:isolate}
+.pcg-login-runway{height:180px;width:min(590px,88vw);position:relative;margin:14px 0 22px;overflow:hidden;isolation:isolate}
 .pcg-login-runway:before{content:"";position:absolute;left:0;right:0;bottom:18px;border-bottom:3px dashed #dce8f6a8;z-index:-1}
 .pcg-login-runner{position:absolute;left:0;bottom:16px;width:150px;height:126px;animation:pcgRunnerTravel 7s ease-in-out infinite alternate;will-change:transform}
 .pcg-runner-art{display:block;width:150px;height:132px;overflow:visible;animation:pcgRunnerBounce .38s ease-in-out infinite alternate;transform-origin:50% 100%}.runner-front-leg{transform-origin:100px 100px;animation:pcgLegFront .34s ease-in-out infinite alternate}.runner-back-leg{transform-origin:82px 100px;animation:pcgLegBack .34s ease-in-out infinite alternate}.runner-box{transform-origin:135px 88px;animation:pcgBoxBob .38s ease-in-out infinite alternate}
@@ -52,9 +52,9 @@ body{background:linear-gradient(135deg,#f7f9fd 0%,#edf3fa 100%);color:var(--pcg-
 @media(prefers-reduced-motion:reduce){.pcg-login-runner,.pcg-runner-art,.pcg-runner-trail,.runner-front-leg,.runner-back-leg,.runner-box{animation:none!important}.pcg-login-runner{left:25%;}}
 
 /* Real 3D PCG worker artwork replacement: animate the complete character as one image. */
-.pcg-login-runner{width:180px;height:150px;bottom:14px;animation:pcgRunnerTravel 7s ease-in-out infinite alternate;will-change:transform}
-.pcg-runner-art.pcg-runner-real{display:block;width:166px;height:150px;object-fit:contain;object-position:center bottom;overflow:visible;animation:pcgRunnerBounce .42s ease-in-out infinite alternate;transform-origin:50% 100%;filter:drop-shadow(0 4px 5px #06162655)}
+.pcg-login-runner{width:200px;height:174px;bottom:14px;animation:pcgRunnerTravel 7s ease-in-out infinite alternate;will-change:transform}
+.pcg-runner-art.pcg-runner-real{display:block;width:194px;height:174px;object-fit:contain;object-position:center bottom;overflow:visible;animation:pcgRunnerBounce .42s ease-in-out infinite alternate;transform-origin:50% 100%;filter:drop-shadow(0 4px 5px #06162655)}
 .pcg-runner-trail{left:-2px;bottom:2px;z-index:-1}
 @keyframes pcgRunnerTravel{0%{transform:translateX(0)}100%{transform:translateX(min(390px, calc(88vw - 190px)))}}
-@media(max-width:700px){.pcg-login-runner{width:150px;height:125px;bottom:12px;animation-name:pcgRunnerTravelMobile}.pcg-runner-art.pcg-runner-real{width:140px;height:125px}.pcg-login-runway{height:120px;margin:12px 0 18px}.pcg-login-runway:before,.pcg-runner-road{bottom:14px}}
+@media(max-width:700px){.pcg-login-runner{width:155px;height:135px;bottom:12px;animation-name:pcgRunnerTravelMobile}.pcg-runner-art.pcg-runner-real{width:150px;height:135px}.pcg-login-runway{height:145px;margin:12px 0 18px}.pcg-login-runway:before,.pcg-runner-road{bottom:14px}}
 @media(prefers-reduced-motion:reduce){.pcg-login-runner,.pcg-runner-art.pcg-runner-real,.pcg-runner-trail{animation:none!important}}
