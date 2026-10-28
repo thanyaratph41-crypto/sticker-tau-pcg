@@ -145,20 +145,40 @@ function App(){
     <header className="pcg-login-top"><div className="pcg-login-brand"><div className="pcg-login-mark">PCG</div><div><b>Sticker Tau PCG</b><span>RAW MATERIALS · RECEIVING MANAGEMENT</span><small>ระบบจัดการรับเข้าวัตถุดิบ</small></div></div><button className="pcg-login-top-btn" onClick={()=>setLoginOpen(true)}><span>↪</span> เข้าสู่ระบบ</button></header>
     <main className="pcg-login-hero"><div className="pcg-login-pill"><i/> PCG OPERATIONS SYSTEM</div><h1>จัดการวัตถุดิบ<br/><em>ง่ายในที่เดียว</em></h1><p>ระบบรับเข้าวัตถุดิบ ตรวจสอบข้อมูล และจัดการฉลากสินค้า<br className="pcg-desktop-break"/> ครบจบในพื้นที่ทำงานเดียว</p><div className="pcg-login-runway" aria-label="พนักงาน PCG วิ่งส่งวัตถุดิบ">
       <div className="pcg-login-runner">
-        <svg className="pcg-runner-art" viewBox="0 0 170 150" role="img" aria-label="พนักงานคลังสินค้ากำลังวิ่งถือกล่อง">
-          <ellipse cx="82" cy="139" rx="58" ry="6" fill="#071728" opacity=".35"/>
-          <g className="runner-back-leg"><path d="M72 91 L54 111 L31 113 Q23 116 28 123 L61 123 Q69 121 73 113 L88 101Z" fill="#15385f"/><path d="M28 117 L16 117 Q10 120 15 125 L42 126 Q49 124 45 119Z" fill="#f3f7ff"/></g>
-          <g className="runner-front-leg"><path d="M91 92 L112 108 L123 126 Q127 132 136 128 L143 124 Q147 121 142 117 L130 113 L120 92Z" fill="#173b64"/><path d="M128 124 L145 124 Q153 126 148 132 L126 135 Q118 134 122 129Z" fill="#f3f7ff"/></g>
-          <path d="M63 56 Q78 48 94 60 L108 92 Q91 106 67 96 L55 73Z" fill="#245ca5" stroke="#dceaff" strokeWidth="2"/>
-          <path d="M66 62 L52 78 L42 89" fill="none" stroke="#f1c5a6" strokeWidth="10" strokeLinecap="round"/>
-          <path d="M92 65 L106 75 L118 68" fill="none" stroke="#f1c5a6" strokeWidth="10" strokeLinecap="round"/>
-          <g className="runner-box"><rect x="106" y="58" width="39" height="35" rx="3" fill="#d9b17a" stroke="#fff0d7" strokeWidth="2"/><path d="M125 58 V93 M106 70 H145" stroke="#b98d55" strokeWidth="2"/><text x="125" y="83" fontSize="8" fontWeight="800" textAnchor="middle" fill="#68451f">PCG</text></g>
-          <path d="M61 43 Q62 21 84 23 Q106 25 103 48 L97 65 L66 61Z" fill="#252b34"/>
-          <ellipse cx="83" cy="43" rx="21" ry="24" fill="#f2c4a3"/>
-          <path d="M60 39 Q58 18 81 16 Q105 17 107 34 L96 31 L82 25 L69 34Z" fill="#1760d7" stroke="#a8caff" strokeWidth="2"/>
-          <path d="M67 30 L101 30 L102 36 L66 36Z" fill="#397ff0"/><text x="83" y="33" fontSize="7" fontWeight="900" textAnchor="middle" fill="#fff">PCG</text>
-          <circle cx="90" cy="43" r="2" fill="#172b43"/><path d="M94 52 Q88 57 82 52" fill="none" stroke="#9c5945" strokeWidth="2" strokeLinecap="round"/>
-          <path d="M68 66 L60 83" stroke="#f2c4a3" strokeWidth="9" strokeLinecap="round"/>
+        <svg className="pcg-runner-art" viewBox="0 0 190 160" role="img" aria-label="พนักงานคลังสินค้า PCG วิ่งถือกล่อง">
+          <defs>
+            <linearGradient id="uniformBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#3c86ef"/><stop offset="1" stopColor="#174b9a"/></linearGradient>
+            <linearGradient id="carton" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f4d7a5"/><stop offset="1" stopColor="#c99a5b"/></linearGradient>
+            <linearGradient id="capBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4389ff"/><stop offset="1" stopColor="#174db9"/></linearGradient>
+          </defs>
+          <ellipse cx="91" cy="148" rx="60" ry="6" fill="#06172a" opacity=".38"/>
+          <g className="runner-back-leg">
+            <path d="M79 99 Q69 111 57 119 L39 119 Q33 122 38 127 L64 129 Q73 128 80 120 L96 108Z" fill="#142f50"/>
+            <path d="M38 121 L22 121 Q16 124 21 129 L48 130 Q55 129 51 124Z" fill="#edf4ff" stroke="#b9cce6" strokeWidth="2"/>
+          </g>
+          <g className="runner-front-leg">
+            <path d="M99 99 Q112 106 119 119 L132 130 Q137 134 145 130 L151 126 Q153 122 147 119 L132 113 L121 96Z" fill="#1b3c63"/>
+            <path d="M134 128 L153 127 Q161 129 156 135 L133 138 Q125 137 128 132Z" fill="#f4f8ff" stroke="#b9cce6" strokeWidth="2"/>
+          </g>
+          <path d="M75 58 Q88 51 102 60 L116 94 Q99 107 75 99 L64 76Z" fill="url(#uniformBlue)" stroke="#c7ddff" strokeWidth="2"/>
+          <path d="M82 64 L91 68 L99 64" fill="none" stroke="#d9e8ff" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M70 68 Q61 78 53 86" fill="none" stroke="#e8b18e" strokeWidth="11" strokeLinecap="round"/>
+          <path d="M105 69 L119 78 L129 75" fill="none" stroke="#e8b18e" strokeWidth="11" strokeLinecap="round"/>
+          <g className="runner-box">
+            <path d="M116 70 L151 70 L159 78 L159 111 L116 111Z" fill="url(#carton)" stroke="#fff0d6" strokeWidth="2"/>
+            <path d="M116 70 L125 62 L160 62 L151 70Z" fill="#f7dfb5" stroke="#fff0d6" strokeWidth="2"/>
+            <path d="M137 70 V111 M116 82 H159" stroke="#b9894c" strokeWidth="2" opacity=".8"/>
+            <text x="138" y="98" fontSize="8" fontWeight="900" textAnchor="middle" fill="#68451f">PCG</text>
+          </g>
+          <path d="M70 43 Q67 23 86 20 Q105 20 108 40 L102 61 L75 60Z" fill="#292d35"/>
+          <ellipse cx="88" cy="43" rx="20" ry="23" fill="#f2c19e" stroke="#d89c78" strokeWidth="1"/>
+          <path d="M67 37 Q65 17 86 15 Q108 16 111 32 L100 29 L85 24 L73 33Z" fill="url(#capBlue)" stroke="#9fc3ff" strokeWidth="2"/>
+          <path d="M70 31 L105 31 L110 37 L68 37Z" fill="#3777df"/>
+          <text x="88" y="29" fontSize="7" fontWeight="900" textAnchor="middle" fill="#fff">PCG</text>
+          <circle cx="95" cy="43" r="2" fill="#17304c"/><circle cx="80" cy="42" r="1.6" fill="#17304c"/>
+          <path d="M82 51 Q89 57 96 51" fill="none" stroke="#a75d48" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M73 66 L69 81" stroke="#f2c19e" strokeWidth="8" strokeLinecap="round"/>
+          <path d="M85 61 L94 65" stroke="#dceaff" strokeWidth="3" strokeLinecap="round"/>
         </svg>
         <span className="pcg-runner-trail" aria-hidden="true">•••</span>
       </div>
