@@ -143,7 +143,27 @@ function App(){
  if(!showApp) return <div className="pcg-login-landing">
     <div className="pcg-login-overlay" />
     <header className="pcg-login-top"><div className="pcg-login-brand"><div className="pcg-login-mark">PCG</div><div><b>Sticker Tau PCG</b><span>RAW MATERIALS · RECEIVING MANAGEMENT</span><small>ระบบจัดการรับเข้าวัตถุดิบ</small></div></div><button className="pcg-login-top-btn" onClick={()=>setLoginOpen(true)}><span>↪</span> เข้าสู่ระบบ</button></header>
-    <main className="pcg-login-hero"><div className="pcg-login-pill"><i/> PCG OPERATIONS SYSTEM</div><h1>จัดการวัตถุดิบ<br/><em>ง่ายในที่เดียว</em></h1><p>ระบบรับเข้าวัตถุดิบ ตรวจสอบข้อมูล และจัดการฉลากสินค้า<br className="pcg-desktop-break"/> ครบจบในพื้นที่ทำงานเดียว</p><div className="pcg-login-truck"><div className="pcg-truck-vehicle"><div className="pcg-truck-box">PCG <small>RAW MATERIALS</small></div><div className="pcg-truck-cab"/><div className="pcg-truck-wheel wheel-one"/><div className="pcg-truck-wheel wheel-two"/></div><div className="pcg-truck-road"/></div><div className="pcg-login-features"><div><span>▤</span><b>รับเข้าวัตถุดิบ</b><small>ตรวจสอบข้อมูลก่อนบันทึก</small></div><div><span>▥</span><b>จัดเก็บเป็นระบบ</b><small>ค้นหาประวัติได้สะดวก</small></div><div><span>▣</span><b>พิมพ์ฉลากสินค้า</b><small>จัดทำฉลาก 4×4 นิ้ว</small></div><div><span>⇢</span><b>พร้อมใช้งาน</b><small>จัดการงานในที่เดียว</small></div></div></main>
+    <main className="pcg-login-hero"><div className="pcg-login-pill"><i/> PCG OPERATIONS SYSTEM</div><h1>จัดการวัตถุดิบ<br/><em>ง่ายในที่เดียว</em></h1><p>ระบบรับเข้าวัตถุดิบ ตรวจสอบข้อมูล และจัดการฉลากสินค้า<br className="pcg-desktop-break"/> ครบจบในพื้นที่ทำงานเดียว</p><div className="pcg-login-runway" aria-label="พนักงาน PCG วิ่งส่งวัตถุดิบ">
+      <div className="pcg-login-runner">
+        <svg className="pcg-runner-art" viewBox="0 0 170 150" role="img" aria-label="พนักงานคลังสินค้ากำลังวิ่งถือกล่อง">
+          <ellipse cx="82" cy="139" rx="58" ry="6" fill="#071728" opacity=".35"/>
+          <g className="runner-back-leg"><path d="M72 91 L54 111 L31 113 Q23 116 28 123 L61 123 Q69 121 73 113 L88 101Z" fill="#15385f"/><path d="M28 117 L16 117 Q10 120 15 125 L42 126 Q49 124 45 119Z" fill="#f3f7ff"/></g>
+          <g className="runner-front-leg"><path d="M91 92 L112 108 L123 126 Q127 132 136 128 L143 124 Q147 121 142 117 L130 113 L120 92Z" fill="#173b64"/><path d="M128 124 L145 124 Q153 126 148 132 L126 135 Q118 134 122 129Z" fill="#f3f7ff"/></g>
+          <path d="M63 56 Q78 48 94 60 L108 92 Q91 106 67 96 L55 73Z" fill="#245ca5" stroke="#dceaff" strokeWidth="2"/>
+          <path d="M66 62 L52 78 L42 89" fill="none" stroke="#f1c5a6" strokeWidth="10" strokeLinecap="round"/>
+          <path d="M92 65 L106 75 L118 68" fill="none" stroke="#f1c5a6" strokeWidth="10" strokeLinecap="round"/>
+          <g className="runner-box"><rect x="106" y="58" width="39" height="35" rx="3" fill="#d9b17a" stroke="#fff0d7" strokeWidth="2"/><path d="M125 58 V93 M106 70 H145" stroke="#b98d55" strokeWidth="2"/><text x="125" y="83" fontSize="8" fontWeight="800" textAnchor="middle" fill="#68451f">PCG</text></g>
+          <path d="M61 43 Q62 21 84 23 Q106 25 103 48 L97 65 L66 61Z" fill="#252b34"/>
+          <ellipse cx="83" cy="43" rx="21" ry="24" fill="#f2c4a3"/>
+          <path d="M60 39 Q58 18 81 16 Q105 17 107 34 L96 31 L82 25 L69 34Z" fill="#1760d7" stroke="#a8caff" strokeWidth="2"/>
+          <path d="M67 30 L101 30 L102 36 L66 36Z" fill="#397ff0"/><text x="83" y="33" fontSize="7" fontWeight="900" textAnchor="middle" fill="#fff">PCG</text>
+          <circle cx="90" cy="43" r="2" fill="#172b43"/><path d="M94 52 Q88 57 82 52" fill="none" stroke="#9c5945" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M68 66 L60 83" stroke="#f2c4a3" strokeWidth="9" strokeLinecap="round"/>
+        </svg>
+        <span className="pcg-runner-trail" aria-hidden="true">•••</span>
+      </div>
+      <div className="pcg-runner-road" aria-hidden="true"/>
+    </div><div className="pcg-login-features"><div><span>▤</span><b>รับเข้าวัตถุดิบ</b><small>ตรวจสอบข้อมูลก่อนบันทึก</small></div><div><span>▥</span><b>จัดเก็บเป็นระบบ</b><small>ค้นหาประวัติได้สะดวก</small></div><div><span>▣</span><b>พิมพ์ฉลากสินค้า</b><small>จัดทำฉลาก 4×4 นิ้ว</small></div><div><span>⇢</span><b>พร้อมใช้งาน</b><small>จัดการงานในที่เดียว</small></div></div></main>
     {loginOpen&&<div className="pcg-login-modal-backdrop" onClick={()=>setLoginOpen(false)}><section className="pcg-login-modal" onClick={e=>e.stopPropagation()}><button className="pcg-login-close" onClick={()=>setLoginOpen(false)} aria-label="ปิด">×</button><div className="pcg-login-modal-mark">PCG</div><h2>เข้าสู่ระบบ</h2><p>Sticker Tau PCG · Raw Materials</p><form onSubmit={e=>{e.preventDefault();setNotice('ยังเข้าสู่ระบบไม่ได้: โค้ดต้นฉบับไม่มีระบบตรวจสอบบัญชี ต้องเชื่อมระบบ Auth ก่อน');}}><label>ชื่อผู้ใช้<input autoComplete="username" value={loginUser} onChange={e=>setLoginUser(e.target.value)} placeholder="กรอกชื่อผู้ใช้" required/></label><label>รหัสผ่าน<input type="password" autoComplete="current-password" value={loginPass} onChange={e=>setLoginPass(e.target.value)} placeholder="กรอกรหัสผ่าน" required/></label><button className="pcg-login-submit" type="submit">เข้าสู่ระบบ <span>→</span></button><small className="pcg-login-notice">ยังไม่ได้เชื่อมระบบตรวจสอบบัญชีผู้ใช้ จึงยังไม่สามารถยืนยันการเข้าสู่ระบบได้</small><button className="pcg-login-demo" type="button" onClick={()=>{setLoginOpen(false);setShowApp(true);setNotice('กำลังใช้โหมดเดิมในเครื่องนี้ — ยังไม่มีการตรวจสอบบัญชีผู้ใช้');}}>ดูตัวอย่างระบบเดิม (โหมดทดสอบ)</button></form></section></div>}
   </div>;
  return <div className="app-shell">
