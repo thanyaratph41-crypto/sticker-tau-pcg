@@ -32,7 +32,10 @@ function App(){
  const [page,setPage]=useState('dashboard'),[excelView,setExcelView]=useState('hub'),[receipts,setReceipts]=useState([]),[receipt,setReceipt]=useState(blankReceipt()),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[selected,setSelected]=useState(null),[navOpen,setNavOpen]=useState(false),[showPhotos,setShowPhotos]=useState(null),[stagedExcel,setStagedExcel]=useState(null),[excelReceiver,setExcelReceiver]=useState(''),[selectedPrint,setSelectedPrint]=useState({}),[printCopies,setPrintCopies]=useState({}),[fiveSRecords,setFiveSRecords]=useState([]),[fiveSForm,setFiveSForm]=useState(blankFiveS()),[fiveSEditId,setFiveSEditId]=useState(null),[fiveSReportFrom,setFiveSReportFrom]=useState(''),[fiveSReportTo,setFiveSReportTo]=useState(''),[fiveSReportQuery,setFiveSReportQuery]=useState(''),[scanCode,setScanCode]=useState(''),[scanResults,setScanResults]=useState(null),[scanMessage,setScanMessage]=useState(''),[cameraActive,setCameraActive]=useState(false),[cameraError,setCameraError]=useState('');
  const importRef=useRef(null);
  const excelRef=useRef(null);
-  const scanInputRef=useRef(null);\n  const scanVideoRef=useRef(null);\n  const scanStreamRef=useRef(null);\n  const scanFrameRef=useRef(null);\n  const scanVideoRef=useRef(null);\n  const scanStreamRef=useRef(null);\n  const scanFrameRef=useRef(null);
+  const scanInputRef=useRef(null);
+  const scanVideoRef=useRef(null);
+  const scanStreamRef=useRef(null);
+  const scanFrameRef=useRef(null);
  const refresh=async()=>{setReceipts(await allReceipts());setFiveSRecords(await allFiveS());};
  useEffect(()=>{(async()=>{const changed=await migrateLegacyLpns();await refresh();if(changed) setNotice(`ปรับ LPN เดิมเป็นรหัส RM แล้ว ${changed} เอกสาร — รหัสเดิมย้ายไปช่อง Location`);})().catch(()=>setNotice('เปิดฐานข้อมูลในเบราว์เซอร์ไม่สำเร็จ'));},[]);
  const notify=(s)=>{setNotice(s);setTimeout(()=>setNotice(''),4000)};
