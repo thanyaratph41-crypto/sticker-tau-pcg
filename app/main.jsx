@@ -29,10 +29,10 @@ function fmtDate(s){if(!s)return '—';const [y,m,d]=s.split('-');return `${d}/$
 function safeFileName(s){return (s||'label').replace(/[^a-z0-9-_]/gi,'_');}
 function App(){
  const [showApp,setShowApp]=useState(false),[loginOpen,setLoginOpen]=useState(false),[loginUser,setLoginUser]=useState(''),[loginPass,setLoginPass]=useState('');
- const [page,setPage]=useState('dashboard'),[excelView,setExcelView]=useState('hub'),[receipts,setReceipts]=useState([]),[receipt,setReceipt]=useState(blankReceipt()),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[selected,setSelected]=useState(null),[navOpen,setNavOpen]=useState(false),[showPhotos,setShowPhotos]=useState(null),[stagedExcel,setStagedExcel]=useState(null),[excelReceiver,setExcelReceiver]=useState(''),[selectedPrint,setSelectedPrint]=useState({}),[printCopies,setPrintCopies]=useState({}),[fiveSRecords,setFiveSRecords]=useState([]),[fiveSForm,setFiveSForm]=useState(blankFiveS()),[fiveSEditId,setFiveSEditId]=useState(null),[fiveSReportFrom,setFiveSReportFrom]=useState(''),[fiveSReportTo,setFiveSReportTo]=useState(''),[fiveSReportQuery,setFiveSReportQuery]=useState(''),[scanCode,setScanCode]=useState(''),[scanResults,setScanResults]=useState(null),[scanMessage,setScanMessage]=useState('');
+ const [page,setPage]=useState('dashboard'),[excelView,setExcelView]=useState('hub'),[receipts,setReceipts]=useState([]),[receipt,setReceipt]=useState(blankReceipt()),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[selected,setSelected]=useState(null),[navOpen,setNavOpen]=useState(false),[showPhotos,setShowPhotos]=useState(null),[stagedExcel,setStagedExcel]=useState(null),[excelReceiver,setExcelReceiver]=useState(''),[selectedPrint,setSelectedPrint]=useState({}),[printCopies,setPrintCopies]=useState({}),[fiveSRecords,setFiveSRecords]=useState([]),[fiveSForm,setFiveSForm]=useState(blankFiveS()),[fiveSEditId,setFiveSEditId]=useState(null),[fiveSReportFrom,setFiveSReportFrom]=useState(''),[fiveSReportTo,setFiveSReportTo]=useState(''),[fiveSReportQuery,setFiveSReportQuery]=useState(''),[scanCode,setScanCode]=useState(''),[scanResults,setScanResults]=useState(null),[scanMessage,setScanMessage]=useState(''),[cameraActive,setCameraActive]=useState(false),[cameraError,setCameraError]=useState('');
  const importRef=useRef(null);
  const excelRef=useRef(null);
-  const scanInputRef=useRef(null);
+  const scanInputRef=useRef(null);\n  const scanVideoRef=useRef(null);\n  const scanStreamRef=useRef(null);\n  const scanFrameRef=useRef(null);\n  const scanVideoRef=useRef(null);\n  const scanStreamRef=useRef(null);\n  const scanFrameRef=useRef(null);
  const refresh=async()=>{setReceipts(await allReceipts());setFiveSRecords(await allFiveS());};
  useEffect(()=>{(async()=>{const changed=await migrateLegacyLpns();await refresh();if(changed) setNotice(`ปรับ LPN เดิมเป็นรหัส RM แล้ว ${changed} เอกสาร — รหัสเดิมย้ายไปช่อง Location`);})().catch(()=>setNotice('เปิดฐานข้อมูลในเบราว์เซอร์ไม่สำเร็จ'));},[]);
  const notify=(s)=>{setNotice(s);setTimeout(()=>setNotice(''),4000)};
@@ -109,8 +109,8 @@ function App(){
   w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PCG 3.5x3.5 Labels</title></head><body style="font-family:Arial,sans-serif">กำลังเตรียมฉลาก...</body></html>');w.document.close();
   const escape=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const makeLabel=(item,r)=>{
-    // Use SAB Code as the barcode payload and preserve leading zeros as text.
-    const barcodeValue=String(item.sabCode||item.sku||'').trim();
+    // Encode the system-assigned LPN so each pallet can be looked up uniquely.
+    const barcodeValue=String(item.lpn||'').trim();
     const barcodeSvg=(()=>{const el=document.createElementNS('http://www.w3.org/2000/svg','svg');try{if(!barcodeValue)return '<div class="barcode-text">ไม่พบ LPN</div>';JsBarcode(el,barcodeValue,{format:'CODE128',displayValue:true,fontSize:10,height:34,margin:8,width:1.6});return el.outerHTML;}catch{return '<div class="barcode-text">LPN ไม่ถูกต้อง</div>'; }})();
     return `<div class="label">
       <div class="head"><span class="brand">PCG</span><span class="head-title">ใบป้ายประวัติวัตถุดิบ</span></div>
@@ -174,6 +174,41 @@ function App(){
     setScanResults(matches);
     setScanMessage(matches.length ? '' : `ไม่พบสินค้าในข้อมูลที่บันทึกไว้สำหรับรหัส ${String(rawCode).trim()}`);
   };
+  const stopCamera=()=>{
+    if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);
+    scanFrameRef.current=null;
+    if(scanStreamRef.current){scanStreamRef.current.getTracks().forEach(track=>track.stop());scanStreamRef.current=null;}
+    if(scanVideoRef.current)scanVideoRef.current.srcObject=null;
+    setCameraActive(false);
+  };
+  const startCamera=async()=>{
+    setCameraError('');
+    if(!('BarcodeDetector' in window)){setCameraError('เบราว์เซอร์นี้ยังไม่รองรับการสแกนผ่านกล้อง แนะนำใช้ Chrome บน Android หรือสแกนผ่านเครื่อง USB/Bluetooth');return;}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      scanStreamRef.current=stream;
+      setCameraActive(true);
+    }catch(err){setCameraError(err?.name==='NotAllowedError'?'กรุณาอนุญาตให้เว็บไซต์ใช้กล้องก่อนเริ่มสแกน':'เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์กล้องและลองใหม่');}
+  };
+  useEffect(()=>{
+    if(!cameraActive||!scanVideoRef.current||!scanStreamRef.current)return;
+    const video=scanVideoRef.current;
+    video.srcObject=scanStreamRef.current;
+    video.play().catch(()=>setCameraError('ไม่สามารถเริ่มภาพจากกล้องได้ กรุณาลองใหม่'));
+    const detector=new window.BarcodeDetector({formats:['code_128','ean_13','ean_8','upc_a','upc_e','code_39','itf']});
+    let stopped=false;
+    const detect=async()=>{
+      if(stopped)return;
+      if(video.readyState>=2){
+        try{const codes=await detector.detect(video);if(codes.length&&codes[0].rawValue){const value=codes[0].rawValue;setScanCode(value);findScannedProduct(value);stopCamera();return;}}catch{}
+      }
+      if(!stopped)scanFrameRef.current=requestAnimationFrame(detect);
+    };
+    scanFrameRef.current=requestAnimationFrame(detect);
+    return ()=>{stopped=true;if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);};
+  },[cameraActive]);
+  useEffect(()=>()=>{if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);if(scanStreamRef.current)scanStreamRef.current.getTracks().forEach(track=>track.stop());},[]);
+  useEffect(()=>{if(page!=='scan'&&cameraActive)stopCamera();},[page,cameraActive]);
   useEffect(()=>{if(page==='scan'&&showApp){const t=setTimeout(()=>scanInputRef.current?.focus(),100);return ()=>clearTimeout(t);}},[page,showApp]);
  if(!showApp) return <div className="pcg-login-landing">
     <div className="pcg-login-overlay" />
@@ -184,7 +219,7 @@ function App(){
         <span className="pcg-runner-trail" aria-hidden="true">•••</span>
       </div>
       <div className="pcg-runner-road" aria-hidden="true"/>
-    </div><div className="pcg-login-features"><div><span>▤</span><b>รับเข้าวัตถุดิบ</b><small>ตรวจสอบข้อมูลก่อนบันทึก</small></div><div><span>▥</span><b>จัดเก็บเป็นระบบ</b><small>ค้นหาประวัติได้สะดวก</small></div><div><span>▣</span><b>พิมพ์ฉลากสินค้า</b><small>จัดทำฉลาก 4×4 นิ้ว</small></div><div><span>⇢</span><b>พร้อมใช้งาน</b><small>จัดการงานในที่เดียว</small></div></div></main>
+    </div><div className="pcg-login-features"><div><span>▤</span><b>รับเข้าวัตถุดิบ</b><small>ตรวจสอบข้อมูลก่อนบันทึก</small></div><div><span>▥</span><b>จัดเก็บเป็นระบบ</b><small>ค้นหาประวัติได้สะดวก</small></div><div><span>▣</span><b>พิมพ์ฉลากสินค้า</b><small>จัดทำฉลาก 3.5×3.5 นิ้ว</small></div><div><span>⇢</span><b>พร้อมใช้งาน</b><small>จัดการงานในที่เดียว</small></div></div></main>
     {loginOpen&&<div className="pcg-login-modal-backdrop" onClick={()=>setLoginOpen(false)}><section className="pcg-login-modal" onClick={e=>e.stopPropagation()}><button className="pcg-login-close" onClick={()=>setLoginOpen(false)} aria-label="ปิด">×</button><div className="pcg-login-modal-mark">PCG</div><h2>เข้าสู่ระบบ</h2><p>Sticker Tau PCG · Raw Materials</p><form onSubmit={e=>{e.preventDefault();setNotice('ยังเข้าสู่ระบบไม่ได้: โค้ดต้นฉบับไม่มีระบบตรวจสอบบัญชี ต้องเชื่อมระบบ Auth ก่อน');}}><label>ชื่อผู้ใช้<input autoComplete="username" value={loginUser} onChange={e=>setLoginUser(e.target.value)} placeholder="กรอกชื่อผู้ใช้" required/></label><label>รหัสผ่าน<input type="password" autoComplete="current-password" value={loginPass} onChange={e=>setLoginPass(e.target.value)} placeholder="กรอกรหัสผ่าน" required/></label><button className="pcg-login-submit" type="submit">เข้าสู่ระบบ <span>→</span></button><small className="pcg-login-notice">ยังไม่ได้เชื่อมระบบตรวจสอบบัญชีผู้ใช้ จึงยังไม่สามารถยืนยันการเข้าสู่ระบบได้</small><button className="pcg-login-demo" type="button" onClick={()=>{setLoginOpen(false);setShowApp(true);setNotice('กำลังใช้โหมดเดิมในเครื่องนี้ — ยังไม่มีการตรวจสอบบัญชีผู้ใช้');}}>ดูตัวอย่างระบบเดิม (โหมดทดสอบ)</button></form></section></div>}
   </div>;
  return <div className="app-shell">
@@ -196,13 +231,17 @@ function App(){
   {page==='scan'&&<><div className="page-heading"><div><div className="eyebrow">PRODUCT LOOKUP / BARCODE SCANNER</div><h1>สแกนบาร์โค้ตสินค้า</h1><p>ยิงบาร์โค้ตบนสติ๊กเกอร์เดิม แล้วดูชื่อสินค้า จำนวน และน้ำหนักได้ทันที โดยไม่เปลี่ยนรูปแบบสติ๊กเกอร์</p></div></div>
     <div className="form-card" style={{maxWidth:900,marginBottom:22}}>
       <div className="card-title"><Search size={20}/><div><h2>ค้นหาสินค้าจากบาร์โค้ต</h2><p>ใช้เครื่องสแกนแบบ USB/Bluetooth ที่พิมพ์รหัสลงช่องนี้แล้วกด Enter อัตโนมัติได้</p></div></div>
-      <form onSubmit={e=>{e.preventDefault();findScannedProduct(scanCode);}} style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-        <input ref={scanInputRef} value={scanCode} onChange={e=>{setScanCode(e.target.value);setScanMessage('');}} placeholder="คลิกช่องนี้ แล้วยิงบาร์โค้ตสินค้า..." aria-label="รหัสบาร์โค้ต" style={{flex:'1 1 300px',minWidth:0,fontSize:20,padding:'15px 16px',border:'1px solid #cbd5e1',borderRadius:10}}/>
-        <button className="btn btn-primary" type="submit"><Search size={16}/> ค้นหาสินค้า</button>
-        <button className="btn btn-outline" type="button" onClick={()=>{setScanCode('');setScanResults(null);setScanMessage('');scanInputRef.current?.focus();}}>ล้าง</button>
-      </form>
-      <p className="hint" style={{marginTop:10}}>ค้นหาจากรหัสที่พิมพ์บนสติ๊กเกอร์ (SAB Code/SKU) และลองเทียบ Barcode หรือ LPN ที่บันทึกไว้ด้วย</p>
-    </div>
+      <div className="scan-actions">
+        <button className="btn btn-primary" type="button" onClick={cameraActive?stopCamera:startCamera}><Camera size={16}/>{cameraActive?'ปิดกล้อง':'เปิดกล้องเพื่อสแกน'}</button>
+        <form onSubmit={e=>{e.preventDefault();findScannedProduct(scanCode);}} className="scan-input-form">
+          <input ref={scanInputRef} value={scanCode} onChange={e=>{setScanCode(e.target.value);setScanMessage('');}} placeholder="ยิงบาร์โค้ตด้วยเครื่องสแกน หรือกรอกรหัส..." aria-label="รหัสบาร์โค้ต"/>
+          <button className="btn btn-primary" type="submit"><Search size={16}/> ค้นหา</button>
+          <button className="btn btn-outline" type="button" onClick={()=>{setScanCode('');setScanResults(null);setScanMessage('');scanInputRef.current?.focus();}}>ล้าง</button>
+        </form>
+      </div>
+      {cameraActive&&<div className="scan-camera"><video ref={scanVideoRef} autoPlay muted playsInline/><div className="scan-camera-guide">วางบาร์โค้ตให้อยู่ในกรอบ</div></div>}
+      {cameraError&&<div className="warning-box" role="status"><ShieldAlert size={18}/><div><b>{cameraError}</b><p>สามารถใช้เครื่องสแกน USB/Bluetooth แทนได้</p></div></div>}
+      <p className="hint" style={{marginTop:10}}>สแกนจากกล้องมือถือหรือเครื่องอ่านบาร์โค้ตได้ ระบบจะค้นหาด้วย LPN ของพาเลทและแสดงข้อมูลสินค้า LOT จำนวน และน้ำหนัก</p>
     {scanMessage&&<div className="warning-box" role="status"><ShieldAlert size={18}/><div><b>{scanMessage}</b><p>ตรวจว่ารหัสบนสติ๊กเกอร์ตรงกับข้อมูลที่นำเข้า Excel หรือบันทึกไว้ในระบบหรือไม่</p></div></div>}
     {scanResults&&scanResults.length>0&&<><div className="section-heading"><div><h2>ผลการสแกน {scanResults.length>1?`พบ ${scanResults.length} รายการ`:'พบสินค้าแล้ว'}</h2><p>แสดงข้อมูลตามรายการรับเข้าและข้อมูลบนสติ๊กเกอร์เดิม</p></div><button className="btn btn-outline" onClick={()=>{setScanCode('');setScanResults(null);setScanMessage('');scanInputRef.current?.focus();}}>สแกนรายการถัดไป</button></div>
       {scanResults.length>1&&<div className="warning-box"><ShieldAlert size={18}/><div><b>รหัสนี้ตรงกับสินค้ามากกว่า 1 รายการ</b><p>ตรวจสอบ LOT, LPN และวันที่รับให้ตรงกับสติ๊กเกอร์ก่อนนำข้อมูลไปใช้</p></div></div>}
