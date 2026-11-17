@@ -78,3 +78,15 @@ body{background:linear-gradient(135deg,#f7f9fd 0%,#edf3fa 100%);color:var(--pcg-
 .scan-camera video{display:block;width:100%;height:100%;object-fit:cover}
 .scan-camera-guide{position:absolute;left:12%;right:12%;top:35%;height:30%;border:2px solid #fff;border-radius:12px;box-shadow:0 0 0 999px #0003;display:flex;align-items:flex-end;justify-content:center;color:#fff;font-size:12px;padding-bottom:8px;text-shadow:0 1px 3px #000}
 @media(max-width:700px){.scan-input-form{display:grid;grid-template-columns:1fr 1fr}.scan-input-form input{grid-column:1/-1;font-size:16px}.scan-actions>.btn{width:100%}}
+
+/* Mobile camera scanner: iPhone Safari and Android */
+.scan-camera{width:min(100%,680px);aspect-ratio:4/3;touch-action:pan-y}
+.scan-camera video{object-fit:contain;background:#080d14}
+.scan-camera-guide{pointer-events:none}
+@media(max-width:700px){
+  .scan-camera{width:100%;aspect-ratio:3/4;max-height:68vh;margin:14px auto 6px}
+  .scan-camera video{object-fit:cover}
+  .scan-input-form{grid-template-columns:1fr 1fr}
+  .scan-input-form input{grid-column:1/-1;min-height:50px}
+  .scan-actions>.btn{min-height:48px;font-size:14px}
+}
