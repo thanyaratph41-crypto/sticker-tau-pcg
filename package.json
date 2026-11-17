@@ -19,7 +19,8 @@
     "jsbarcode": "^3.11.6",
     "lucide-react": "^0.468.0",
     "xlsx": "^0.18.5",
-    "@zxing/browser": "^0.1.5"
+    "@zxing/browser": "^0.1.5",
+    "firebase-admin": "^13.5.0"
   },
   "devDependencies": {}
 }
