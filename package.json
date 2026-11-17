@@ -1,4 +1,3 @@
-
 {
   "name": "sticker-tau-pcg",
   "private": true,
@@ -18,7 +17,8 @@
     "qrcode": "^1.5.4",
     "jsbarcode": "^3.11.6",
     "lucide-react": "^0.468.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@zxing/browser": "^0.1.5"
   },
   "devDependencies": {}
 }
