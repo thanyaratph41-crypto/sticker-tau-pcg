@@ -93,10 +93,10 @@ body{background:linear-gradient(135deg,#f7f9fd 0%,#edf3fa 100%);color:var(--pcg-
 
 /* PCG RT login artwork: slow, subtle glide using the former runner's travel timing. */
 .pcg-login-hero{position:relative;isolation:isolate}
-.pcg-login-rt{position:absolute;z-index:0;right:2.5%;bottom:0px;width:min(46vw,620px);height:430px;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;animation:pcgRtGlide 7s ease-in-out infinite alternate;will-change:transform}
+.pcg-login-rt{position:absolute;z-index:0;right:7%;bottom:0px;width:min(43vw,590px);height:410px;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;animation:pcgRtForward 8s ease-in-out infinite alternate;will-change:transform}
 .pcg-login-rt img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 12px 18px #06162666)}
 .pcg-login-hero>.pcg-login-pill,.pcg-login-hero>h1,.pcg-login-hero>p,.pcg-login-features{position:relative;z-index:1}
-@keyframes pcgRtGlide{0%{transform:translateX(26px)}100%{transform:translateX(-26px)}}
-@media(max-width:900px){.pcg-login-rt{right:-3%;width:54vw;height:340px;bottom:15px;opacity:.94}}
-@media(max-width:700px){.pcg-login-rt{right:-4%;width:58vw;height:250px;bottom:10px;opacity:.82}.pcg-login-hero{padding-bottom:24px}.pcg-login-features{margin-top:12px}}
+@keyframes pcgRtForward{0%{transform:translate3d(-24px,0,0) scale(.96)}100%{transform:translate3d(34px,12px,0) scale(1.035)}}
+@media(max-width:900px){.pcg-login-rt{right:3%;width:50vw;height:340px;bottom:15px;opacity:.94}}
+@media(max-width:700px){.pcg-login-rt{right:1%;width:56vw;height:250px;bottom:10px;opacity:.82}.pcg-login-hero{padding-bottom:24px}.pcg-login-features{margin-top:12px}}
 @media(prefers-reduced-motion:reduce){.pcg-login-rt{animation:none!important;transform:none!important}}
