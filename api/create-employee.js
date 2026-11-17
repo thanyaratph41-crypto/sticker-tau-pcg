@@ -1,10 +1,6 @@
+import { randomBytes } from "node:crypto";
 import { FieldValue } from "firebase-admin/firestore";
-import {
-  adminAuth,
-  adminDb,
-  normalizeUsername,
-  usernameToEmail,
-} from "../server/firebaseAdmin.js";
+import { adminAuth, adminDb, normalizeUsername } from "../server/firebaseAdmin.js";
 
 function send(res, status, payload) {
   return res.status(status).json(payload);
@@ -28,32 +24,29 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
-    const username = normalizeUsername(body.username);
+    const email = String(body.email || "").trim().toLowerCase();
+    const employeeCode = normalizeUsername(body.employeeCode || email.split("@")[0]);
     const displayName = String(body.displayName || "").trim();
-    const password = String(body.password || "");
     const role = String(body.role || "Staff");
 
-    if (!/^[A-Z0-9._-]{3,32}$/.test(username)) {
-      return send(res, 400, { error: "Username ต้องมี 3–32 ตัว และใช้ได้เฉพาะ A-Z, 0-9, จุด, _ หรือ -" });
-    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res, 400, { error: "กรุณากรอกอีเมลที่ถูกต้อง" });
     if (!displayName) return send(res, 400, { error: "กรุณาระบุชื่อ-นามสกุล" });
-    if (password.length < 8) return send(res, 400, { error: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" });
-    if (!["Admin", "Supervisor", "Staff", "Viewer"].includes(role)) {
-      return send(res, 400, { error: "ระดับสิทธิ์ไม่ถูกต้อง" });
-    }
+    if (!["Admin", "Supervisor", "Staff", "Viewer"].includes(role)) return send(res, 400, { error: "ระดับสิทธิ์ไม่ถูกต้อง" });
 
-    const duplicate = await adminDb.collection("users")
-      .where("username", "==", username)
-      .limit(1)
-      .get();
-    if (!duplicate.empty) return send(res, 409, { error: "Username นี้มีอยู่แล้ว" });
+    const duplicate = await adminAuth.getUserByEmail(email).then(() => true).catch((error) => {
+      if (error.code === "auth/user-not-found") return false;
+      throw error;
+    });
+    if (duplicate) return send(res, 409, { error: "อีเมลนี้มีบัญชีอยู่แล้ว" });
 
-    const email = usernameToEmail(username);
-    const user = await adminAuth.createUser({ email, password, displayName, disabled: false });
+    // สร้างรหัสผ่านสุ่มที่ผู้ใช้จะไม่ต้องทราบ จากนั้นหน้าเว็บส่งลิงก์ตั้งรหัสผ่านไปยังอีเมล
+    const temporaryPassword = randomBytes(36).toString("base64url") + "aA1!";
+    const user = await adminAuth.createUser({ email, password: temporaryPassword, displayName, disabled: false });
     try {
       await adminDb.collection("users").doc(user.uid).set({
         uid: user.uid,
-        username,
+        username: employeeCode,
+        employeeCode,
         displayName,
         role,
         disabled: false,
@@ -67,14 +60,12 @@ export default async function handler(req, res) {
       throw error;
     }
 
-    return send(res, 201, { ok: true, uid: user.uid, username, displayName, role });
+    return send(res, 201, { ok: true, uid: user.uid, email, employeeCode, displayName, role });
   } catch (error) {
     if (error.code === "auth/invalid-id-token" || error.code === "auth/id-token-expired") {
       return send(res, 401, { error: "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่" });
     }
-    if (error.code === "auth/email-already-exists") {
-      return send(res, 409, { error: "Username นี้ถูกใช้งานแล้วใน Firebase Authentication" });
-    }
+    if (error.code === "auth/email-already-exists") return send(res, 409, { error: "อีเมลนี้ถูกใช้งานแล้วใน Firebase Authentication" });
     console.error("create-employee error:", error);
     return send(res, 500, { error: error.message || "สร้างบัญชีไม่สำเร็จ" });
   }
