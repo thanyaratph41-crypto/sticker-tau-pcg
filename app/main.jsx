@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {openDB} from 'idb';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
+import {BrowserMultiFormatReader} from '@zxing/browser';
 import * as XLSX from 'xlsx';
 import {LayoutDashboard, PackagePlus, History, Printer, Database, Camera, Search, Download, Upload, Plus, Trash2, Save, ClipboardList, ShieldAlert, Image as ImageIcon, X, Menu, ChevronRight, FileText, CheckCircle2, Boxes, ClipboardCheck} from 'lucide-react';
 import './style.css';
@@ -36,6 +37,8 @@ function App(){
   const scanVideoRef=useRef(null);
   const scanStreamRef=useRef(null);
   const scanFrameRef=useRef(null);
+  const scannerReaderRef=useRef(null);
+  const scannerControlsRef=useRef(null);
  const refresh=async()=>{setReceipts(await allReceipts());setFiveSRecords(await allFiveS());};
  useEffect(()=>{(async()=>{const changed=await migrateLegacyLpns();await refresh();if(changed) setNotice(`ปรับ LPN เดิมเป็นรหัส RM แล้ว ${changed} เอกสาร — รหัสเดิมย้ายไปช่อง Location`);})().catch(()=>setNotice('เปิดฐานข้อมูลในเบราว์เซอร์ไม่สำเร็จ'));},[]);
  const notify=(s)=>{setNotice(s);setTimeout(()=>setNotice(''),4000)};
@@ -178,6 +181,10 @@ function App(){
     setScanMessage(matches.length ? '' : `ไม่พบสินค้าในข้อมูลที่บันทึกไว้สำหรับรหัส ${String(rawCode).trim()}`);
   };
   const stopCamera=()=>{
+    try{scannerControlsRef.current?.stop();}catch{}
+    scannerControlsRef.current=null;
+    try{scannerReaderRef.current?.reset();}catch{}
+    scannerReaderRef.current=null;
     if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);
     scanFrameRef.current=null;
     if(scanStreamRef.current){scanStreamRef.current.getTracks().forEach(track=>track.stop());scanStreamRef.current=null;}
@@ -186,31 +193,49 @@ function App(){
   };
   const startCamera=async()=>{
     setCameraError('');
-    if(!('BarcodeDetector' in window)){setCameraError('เบราว์เซอร์นี้ยังไม่รองรับการสแกนผ่านกล้อง แนะนำใช้ Chrome บน Android หรือสแกนผ่านเครื่อง USB/Bluetooth');return;}
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-      scanStreamRef.current=stream;
-      setCameraActive(true);
-    }catch(err){setCameraError(err?.name==='NotAllowedError'?'กรุณาอนุญาตให้เว็บไซต์ใช้กล้องก่อนเริ่มสแกน':'เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์กล้องและลองใหม่');}
+    if(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia){
+      setCameraError('การใช้กล้องต้องเปิดเว็บไซต์ผ่าน HTTPS และอนุญาตสิทธิ์กล้องใน Safari/Chrome');
+      return;
+    }
+    setScanResults(null);setScanMessage('');
+    setCameraActive(true);
   };
   useEffect(()=>{
-    if(!cameraActive||!scanVideoRef.current||!scanStreamRef.current)return;
+    if(!cameraActive||!scanVideoRef.current)return;
+    let active=true;
+    const reader=new BrowserMultiFormatReader();
+    scannerReaderRef.current=reader;
     const video=scanVideoRef.current;
-    video.srcObject=scanStreamRef.current;
-    video.play().catch(()=>setCameraError('ไม่สามารถเริ่มภาพจากกล้องได้ กรุณาลองใหม่'));
-    const detector=new window.BarcodeDetector({formats:['code_128','ean_13','ean_8','upc_a','upc_e','code_39','itf']});
-    let stopped=false;
-    const detect=async()=>{
-      if(stopped)return;
-      if(video.readyState>=2){
-        try{const codes=await detector.detect(video);if(codes.length&&codes[0].rawValue){const value=codes[0].rawValue;setScanCode(value);findScannedProduct(value);stopCamera();return;}}catch{}
+    reader.decodeFromConstraints({video:{facingMode:{ideal:'environment'}},audio:false},video,(result,err,controls)=>{
+      scannerControlsRef.current=controls;
+      if(!active)return;
+      if(result){
+        active=false;
+        const value=result.getText();
+        setScanCode(value);
+        findScannedProduct(value);
+        try{controls.stop();}catch{}
+        scannerControlsRef.current=null;
+        setCameraActive(false);
       }
-      if(!stopped)scanFrameRef.current=requestAnimationFrame(detect);
+    }).catch(err=>{
+      if(!active)return;
+      const message=err?.name==='NotAllowedError'
+        ?'กรุณาอนุญาตให้ Safari/Chrome ใช้กล้องในการตั้งค่าของ iPhone'
+        :err?.name==='NotFoundException'
+        ?'ไม่พบกล้องบนอุปกรณ์นี้'
+        :'เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์กล้องและลองใหม่';
+      setCameraError(message);
+      setCameraActive(false);
+    });
+    return ()=>{
+      active=false;
+      try{scannerControlsRef.current?.stop();}catch{}
+      scannerControlsRef.current=null;
+      try{reader.reset();}catch{}
+      if(scannerReaderRef.current===reader)scannerReaderRef.current=null;
     };
-    scanFrameRef.current=requestAnimationFrame(detect);
-    return ()=>{stopped=true;if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);};
-  },[cameraActive]);
-  useEffect(()=>()=>{if(scanFrameRef.current)cancelAnimationFrame(scanFrameRef.current);if(scanStreamRef.current)scanStreamRef.current.getTracks().forEach(track=>track.stop());},[]);
+  },[cameraActive,receipts]);
   useEffect(()=>{if(page!=='scan'&&cameraActive)stopCamera();},[page,cameraActive]);
   useEffect(()=>{if(page==='scan'&&showApp){const t=setTimeout(()=>scanInputRef.current?.focus(),100);return ()=>clearTimeout(t);}},[page,showApp]);
  if(!showApp) return <div className="pcg-login-landing">
